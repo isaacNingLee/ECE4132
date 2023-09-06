@@ -63,13 +63,12 @@ function vehicleModel = sysID(inputData,outputData)
 
 % Obtain the Time Vector from the input data
 inputTimesVector = inputData{1}.Time; 
-ts = inputTimesVector;
 
 % Pre-allocate the input data and the output data array and the parameters
 inputDataArray = zeros(length(inputData{1}.Data),length(inputData));
 outputDataArray = zeros(length(outputData{1}.Data),length(outputData));
 thetaOpt = zeros(length(inputData),2);
-
+Tmax = 900;
 % Shift input data to represent deviations from equilibrium
 for i = 1:length(inputData)
     inputDataArray(:, i) = inputData{i}.Data - inputData{i}.Data(1);
@@ -82,10 +81,10 @@ end
 
 % Identify the system parameters (thetaOpt) for each input-output pair using fminsearch
 for i = 1:1:length(inputData)
-%     input_data = inputDataArray(:,i);
-%     output_data = outputDataArray(:,i;)
-%     ts = inputTimesVector;
-%     v_ss = mean(output_data(end-50:end));
+    input_data = inputDataArray(:,i);
+    output_data = outputDataArray(:,i);
+    ts = inputTimesVector;
+    v_ss = mean(output_data(end-50:end));
     
     % Define a cost function to minimize using fminsearch
     cost = @(theta) sum((output_data-lsim(tf(theta(2)*theta(1), [1,theta(1)]), input_data, ts)).^2);
@@ -109,4 +108,4 @@ vehicleModel = tf(thetaOpt(2)*thetaOpt(1), [1,thetaOpt(1)]);
 % The same approach may be useful for your systemID method.
 
 % Please comment this out if you do not need to use this code!!
-modelOutputArray = lsim(vehicleModel * eye(length(inputData)), inputDataArray, inputTimesVector);
+% modelOutputArray = lsim(vehicleModel * eye(length(inputData)), inputDataArray, inputTimesVector);
