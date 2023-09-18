@@ -59,13 +59,13 @@ elseif task ==2
     Tmin = -3;
 else 
     N = 7;
-    Kp = 0.4;
-    Kd = 0.12;
+    Kp = 0.04;
+    Kd = 1.4;
     Tf = Kd / (N * Kp);
     LTIblock = tf([Kd + Kp * Tf, Kp], [Tf, 1]);
     % This choice of parameters turns off integral action and anti-windup
-    Ki = 0.025;
-    Kt = 1;
+    Ki = 0.05;
+    Kt = 1.5;
     Tmax = 3;
     Tmin = -3;
 end

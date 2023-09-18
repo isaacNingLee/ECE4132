@@ -1,4 +1,47 @@
-function vehicleModel = sysIDCtl(inputData,outputData)
+% function vehicleModel = sysID4Ctl(inputData,outputData)
+% 
+% % This function takes in two cell arrays of timeseries data and returns an
+% % LTI system object (this can be a transfer function or a state space
+% % model). 
+% %
+% % This is used to find a system model to pass into your control design 
+% % function. You could use the same code as for your sysID function, but 
+% % you could also use this code to generate a simpler model that is easier 
+% % to work with for control design.
+% %
+% % Arguments:
+% % -- inputData is a k x 1 cell array where each element is a timeSeries object
+% %    - inputData{j} is the timeSeries object corresponding to the jth 
+% %      "training" input
+% %    - inputData{j}.Time is an array of the simulation time-stamps for the
+% %      jth "training" input
+% %    - inputData{j}.Data is an array of the corresponding input signal values
+% %      for the jth "training" input
+% % -- ouputData is a k x 1 cell array where each element is a timeSeries object
+% %    - outputData{j} is the timeSeries object corresponding to the jth
+% %      "training" output
+% %    - outputData{j}.Time is an array of the simulation time-stamps for the
+% %      jth "training" output
+% %    - outputData{j}.Data is an array of the corresponding input signal values
+% %      for the jth "training" output
+% %
+% % Hints:
+% % -- The system starts in equilibrium. From the input and output signals, 
+% %    you should be able to determine how much you need to subtract from each
+% %    to convert them into *deviation* of the input from equilibrium and 
+% %    *deviation* of the ouput from equilbrium. These should be the 
+% %    equivalent inputs and outputs of your LTI system modelso you should be able to work
+% % -- To access the number of timeSeries objects in inputData you can use
+% %    length(inputData). (Similarly for outputData.)
+% % Constraints:
+% % -- you are expected to use lsim to simulate your model within this function
+% % -- you should ** not ** call the function generateResponseData in this function. 
+% % The only information about the system you should use in this function are the input/output 
+% % timeSeries arrays that are passed as arguments to the function
+% 
+% % this is a fixed reference vehicle model to make the code run.
+% vehicleModel = tf(270,[100,1]);
+function vehicleModel = sysID4Ctl(inputData,outputData)
 
 % This function takes in two cell arrays of timeseries data and returns an
 % LTI system object (this can be a transfer function or a state space
@@ -67,7 +110,7 @@ inputTimesVector = inputData{1}.Time;
 % Pre-allocate the input data and the output data array and the parameters
 inputDataArray = zeros(length(inputData{1}.Data),length(inputData));
 outputDataArray = zeros(length(outputData{1}.Data),length(outputData));
-
+thetaOpt = zeros(length(inputData),2);
 Tmax = 900;
 % Shift input data to represent deviations from equilibrium
 for i = 1:length(inputData)
@@ -79,9 +122,6 @@ for i = 1:length(outputData)
     outputDataArray(:, i) = outputData{i}.Data - outputData{i}.Data(1);
 end
 
-thetaOpt = zeros(length(inputData),4);
-s = tf("s");
-options = optimset('MaxIter', 1e5, 'MaxFunEvals',1e7);
 % Identify the system parameters (thetaOpt) for each input-output pair using fminsearch
 for i = 1:1:length(inputData)
     input_data = inputDataArray(:,i);
@@ -90,21 +130,21 @@ for i = 1:1:length(inputData)
     v_ss = mean(output_data(end-50:end));
     
     % Define a cost function to minimize using fminsearch
-    cost = @(theta) sum((output_data-lsim(theta(1) * (s + theta(2))/(s^2 + theta(3)*s + theta(4)) , input_data, ts)).^2);
+    cost = @(theta) sum((output_data-lsim(tf(theta(2)*theta(1), [1,theta(1)]), input_data, ts)).^2);
     
     % Initialise parameter estimates
     v_init = output_data(1);
     T63 = (find((abs(output_data-v_init)) >= (abs(v_ss-v_init))*0.63, 1 )-1) * Tmax / length(ts) ;
-    theta_init = [1,1,1,1];
+    theta_init = [1/T63, mean(output_data)/mean(input_data)];
     % Optimize the cost function to find the best parameter estimates
-    thetaOpt(i,:) = fminsearch(cost, theta_init, options);
+    thetaOpt(i,:) = fminsearch(cost, theta_init);
 end
 
 % Take the mean of parameter estimates across all input-output pairs
 thetaOpt = mean(thetaOpt);
 
 % Create the identified LTI system model (vehicleModel)
-vehicleModel = thetaOpt(1) * (s + thetaOpt(2))/(s^2 + thetaOpt(3)*s + thetaOpt(4));
+vehicleModel = tf(thetaOpt(2)*thetaOpt(1), [1,thetaOpt(1)]);
 
 % The following is an example of how to use lsim to simulate the response
 % of vehicleModel to all of the inputs, and capture the responses in an array.
