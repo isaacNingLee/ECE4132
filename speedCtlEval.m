@@ -33,7 +33,7 @@ for i = [1:10]
     %%%%%%%% 
     % The control task. Set this to either 1, 2, or 3 depending on which task
     % you are testing.
-    task = 1;
+    task = 3;
 
     % set nominal velocity for the control problem
     if task==2
@@ -65,7 +65,7 @@ for i = [1:10]
     % -- you can change the number of "training" timeseries here if you want to.
     %    if you want to identify a model from data, then you must change this 
     %    to be non-zero
-    numResponsesTraining = 2; 
+    numResponsesTraining = 4; 
     % Sample random torque input step increments
     % -- you can change this if you would like to try different 
     %    step inputs (rather than random ones) for training data. 
@@ -132,7 +132,7 @@ for i = [1:10]
     plotResponsesSpeedRefGs(velocityRef,velocityResponseData,graceProfile,sqrt(nmseArray),speedingFine,accelerationResponse,jerkResponse);
     
     output(i, 1) = mseArray;
-    output(i, 2) = nmseArray;
+    output(i, 2) = sqrt(nmseArray);
     output(i, 3) = speedingFine;
     output(i, 4) = max(abs(accelerationResponse.Data));
     output(i, 5) = max(abs(jerkResponse.Data));
@@ -141,4 +141,4 @@ for i = [1:10]
     close_system('vehicleID.slx',0);
 end
 
-save('task1.mat',"output")
+save('task3.mat',"output")
