@@ -47,17 +47,25 @@ if task == 1
     Tmax = 50;
     Tmin = -50;
 elseif task ==2
-    LTIblock = 0.5*tf(1);
+    N = 5;
+    Kp = 1.5;
+    Kd = 1.5;
+    Tf = Kd / (N * Kp);
+    LTIblock = tf([Kd + Kp * Tf, Kp], [Tf, 1]);
     % This choice of parameters turns off integral action and anti-windup
-    Ki = 0;
-    Kt = 0;
-    Tmax = Inf;
-    Tmin = -Inf;
+    Ki = 0.0001;
+    Kt = 5 * Ki / Kp;
+    Tmax = 50;
+    Tmin = -50;
 else 
-    LTIblock = 0.5*tf(1);
+    N = 5;
+    Kp = 0.07;
+    Kd = 1.2;
+    Tf = Kd / (N * Kp);
+    LTIblock = tf([Kd + Kp * Tf, Kp], [Tf, 1]);
     % This choice of parameters turns off integral action and anti-windup
-    Ki = 0;
-    Kt = 0;
-    Tmax = Inf;
-    Tmin = -Inf;
+    Ki = 0.05;
+    Kt = 15 * Ki / Kp;
+    Tmax = 3;
+    Tmin = -3;
 end
