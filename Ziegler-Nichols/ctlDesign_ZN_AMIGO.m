@@ -39,27 +39,29 @@ function [LTIblock,Ki,Kt,Tmax,Tmin] = ctlDesign(vehicleModel,task)
 T = vehicleModel.denominator{1}(2);
 K_T = vehicleModel.numerator{1}(2);
 if task == 1
-    N = 5;
-    Kp = 0.05;
-    Kd = 0.02;
+    tau = 1;
+    N= 5;
+    Kp = ((0.15*tau+0.35*T)/K_T);
+    Kd = 0.5*tau*K_T/(0.3*tau+K_T)/Kp; % AMIGO method from textbook
     Tf = Kd / (N * Kp);
     LTIblock = tf([Kd + Kp * Tf, Kp], [Tf, 1]);
-    % This choice of parameters turns off integral action and anti-windup
-    Ki = 0.0001;
-    Kt = 5 * Ki / Kp;
-    Tmax = 50;
-    Tmin = -50;
+    % % This choice of parameters turns off integral action and anti-windup
+    Ki = (0.46*tau+0.02*T)/(K_T^2);
+    Kt = 15 * Ki / Kp;
+    Tmax = 2.0;
+    Tmin = -2.0;
 elseif task ==2
-    N = 5;
-    Kp = 1.5;
-    Kd = 1.5;
+    tau = 1;
+    N= 5;
+    Kp = ((0.15*tau+0.35*T)/K_T);
+    Kd = 0.5*tau*K_T/(0.3*tau+K_T)/Kp; % AMIGO method from textbook
     Tf = Kd / (N * Kp);
     LTIblock = tf([Kd + Kp * Tf, Kp], [Tf, 1]);
-    % This choice of parameters turns off integral action and anti-windup
-    Ki = 0.0001;
-    Kt = 5 * Ki / Kp;
-    Tmax = 50;
-    Tmin = -50;
+    % % This choice of parameters turns off integral action and anti-windup
+    Ki = (0.46*tau+0.02*T)/(K_T^2);
+    Kt = 15 * Ki / Kp;
+    Tmax = 2.0;
+    Tmin = -2.0;
 else 
     
     % N = 5;
@@ -72,7 +74,7 @@ else
     % Kt = 15 * Ki / Kp;
     % Tmax = 2.15;
     % Tmin = -2.15;
-    tau = 1.5;
+    tau = 1;
     N= 5;
     Kp = (0.15*tau+0.35*T)/K_T;
     Kd = 0.5*tau*K_T/(0.3*tau+K_T)/Kp; % AMIGO method from textbook
@@ -80,7 +82,7 @@ else
     LTIblock = tf([Kd + Kp * Tf, Kp], [Tf, 1]);
     % % This choice of parameters turns off integral action and anti-windup
     Ki = (0.46*tau+0.02*T)/(K_T^2);
-    Kt = 15 * Ki / Kp;
-    Tmax = 2.0;
-    Tmin = -2.0;
+    Kt = 9 * Ki / Kp;
+    Tmax = 2.1;
+    Tmin = -2.1;
 end
